@@ -12,6 +12,8 @@ The recommended method for exploring the examples is to clone the repository, an
 python -m SimpleHTTPServer 8000
 ```
 
+which you can access on `http://localhost:8000`, and the hello world example on `http://localhost:8000/sandbox/hello-world/`
+
 ### Why not just open `/sandbox/some-folder/index.hml`?
 
 This will be just fine for examples that don't require loading in data from an external source. Local data need to be loaded in with a `http://` protocol (i.e. not `file:///`).
