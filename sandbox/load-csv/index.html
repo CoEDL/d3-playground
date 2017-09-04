@@ -9,7 +9,6 @@
 			height: 500px;
 		}
 		circle {
-			r: 50px;
 			fill:orange;
 			stroke:orange;
 			fill-opacity:0.5;
@@ -33,10 +32,13 @@ var startViz = function(data) {
 	  .enter()
 	  .append("circle")
 	  .attr("cx", function(d, i) {
-	  	return (25 * i) + 50
+	  	return (25 * i) + 100
 	  })
   	  .attr("cy", function(d, i) {
-	  	return (25 * i) + 50
+	  	return (25 * i) + 100
+	  })
+	  .attr("r", function(d, i) {
+	  	return d["land area"] / 314 * 100
 	  })
 }
 
