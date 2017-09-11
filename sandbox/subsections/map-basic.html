@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <title>D3 Hello World</title>
+
+        <style type="text/css">
+                svg {
+                        width: 500px;
+                        height: 500px;
+                }
+                circle {
+                        fill:orange;
+                        stroke:orange;
+                        fill-opacity:0.5;
+                }
+        </style>
+</head>
+<body>
+
+<script type="text/javascript" src="../../dist/d3-4.10.2.min.js"></script>
+<!-- <script type="text/javascript" src="dist/d3-3.5.17.min.js"></script> -->
+
+    <script type="text/javascript">
+    
+let svgDoc = d3.select("body").append("svg")
+
+var startViz = function(data) {
+    console.log(data)
+    //
+    svgDoc.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d,i) {
+            return (25*i) + 50
+        })
+        .attr("cy", function(d,i) {
+            return (25*i) + 50
+        })
+        .attr("r", function(d,i) {
+            return d["land area"] / 314 * 100
+        })
+    
+}
+d3.tsv("../data/subsections/lang.tsv",startViz)
+
+</script>
+
+</body>
+</html>
