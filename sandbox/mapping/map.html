@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title>A map</title>
+</head>
+<style>
+
+ svg {
+     background: lightgray;
+ }
+
+ .graticule {
+     fill: none;
+     stroke: white;
+     stroke-width: 0.5px;
+     stroke-opacity: 0.5;
+ }
+
+ .land {
+     fill: whitesmoke;
+     stroke: white;
+ }
+
+ .boundary {
+     fill: none;
+     stroke: #fff;
+     stroke-width: 0.5px;
+ }
+
+ .ocean {
+     fill: lightblue;
+ }
+
+</style>
+<body>
+    <script src="//d3js.org/d3.v4.0.0-alpha.50.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <script>
+
+     var width = 1500,
+         height = 750;
+
+     var projection = d3.geoEquirectangular()
+                        .scale(height / Math.PI)
+                        .translate([width / 2, height / 2])
+                        .rotate([205,0]);
+
+     var path = d3.geoPath()
+                  .projection(projection);
+
+     var graticule = d3.geoGraticule();
+
+     var svg = d3.select("body").append("svg")
+                 .attr("width", width)
+                 .attr("height", height);
+
+     svg.append("path")
+        .datum(graticule)
+        .attr("class", "graticule")
+        .attr("d", path);
+
+     d3.json("https://unpkg.com/world-atlas@1/world/50m.json", function(error, world) {
+         if (error) throw error;
+
+         svg.insert("path", ".graticule")
+            .datum(topojson.feature(world, world.objects.land))
+            .attr("class", "land")
+            .attr("d", path);
+
+         svg.insert("path", ".graticule")
+            .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+            .attr("class", "boundary")
+            .attr("d", path);
+     });
+
+    </script>
+</body>
