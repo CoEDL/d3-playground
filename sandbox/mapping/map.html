@@ -5,8 +5,16 @@
 </head>
 <style>
 
- svg {
+ div.tooltip {
+     position: absolute;
+     text-align: center;
+     width: auto;
+     height: auto;
+     padding: 2px;
+     font: 10px;
      background: lightgray;
+     border: 1px;
+     pointer-events: none;
  }
 
  .graticule {
@@ -19,6 +27,11 @@
  .land {
      fill: whitesmoke;
      stroke: white;
+     stroke-width: 0.5px;
+ }
+
+ .water {
+     fill: lightgray;
  }
 
  .boundary {
@@ -27,14 +40,16 @@
      stroke-width: 0.5px;
  }
 
- .ocean {
-     fill: lightblue;
+ .language {
+     fill: black;
+     opacity: 1;
  }
 
 </style>
 <body>
     <script src="//d3js.org/d3.v4.0.0-alpha.50.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
+    <script src="https://unpkg.com/d3-geo-voronoi"></script>
     <script>
 
      var width = 1500,
@@ -59,19 +74,75 @@
         .attr("class", "graticule")
         .attr("d", path);
 
-     d3.json("https://unpkg.com/world-atlas@1/world/50m.json", function(error, world) {
-         if (error) throw error;
+     d3.json("../../data/voronoi/ne_50m.json",
+             function(error, world) {
+                 if (error) throw error;
 
-         svg.insert("path", ".graticule")
-            .datum(topojson.feature(world, world.objects.land))
-            .attr("class", "land")
-            .attr("d", path);
+                 svg.insert("path",".graticule")
+                    .datum(topojson.feature(world, world.objects.oceans))
+                    .attr("class", "water")
+                    .attr("d", path);
 
-         svg.insert("path", ".graticule")
-            .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
-            .attr("class", "boundary")
-            .attr("d", path);
-     });
+                 svg.insert("path", ".graticule")
+                    .datum(topojson.feature(world, world.objects.land))
+                    .attr("class", "land")
+                    .attr("d", path);
+
+                 svg.insert("path",".graticule")
+                    .datum(topojson.feature(world, world.objects.lakes))
+                    .attr("class","water")
+                    .attr("d", path);
+
+                 svg.insert("path", ".graticule")
+                    .datum(topojson.mesh(world, world.objects.countries,
+                                         function(a, b) { return a !== b; }))
+                    .attr("class", "boundary")
+                    .attr("d", path);
+             });
+
+     d3.csv("../../data/voronoi/languages-and-dialects-geo.csv",
+            function(error, data) {
+                if (error) throw error;
+
+                data.forEach(function (d) {
+                    d['longitude'] = +d['longitude'];
+                    d['latitude'] = +d['latitude'];
+                });
+
+                projLon = function (x){
+                    return projection([x, 0])[0]
+                }
+
+                projLat = function (y){
+                    return projection([0, y])[1]
+                }
+
+                div = d3.select("body").append("div")
+                        .attr("class","tooltip")
+                        .style("opacity",0);
+
+                svg.selectAll("circle")
+                   .data(data)
+                   .enter()
+                   .append("circle")
+                   .attr("cx", function(d){return projLon(d.longitude);})
+                   .attr("cy", function(d){return projLat(d.latitude);})
+                   .attr("r", 1)
+                   .attr("class", "language")
+                   .on("mouseover", function(d){
+                       div.transition()
+                          .duration(200)
+                          .style("opacity",.9);
+                       div.html(d.name)
+                          .style("left", (d3.event.pageX) + "px")
+                          .style("top", (d3.event.pageY - 23) + "px");
+                   })
+                   .on("mouseout", function(d){
+                       div.transition()
+                          .duration(500)
+                          .style("opacity",0);
+                   });
+            });
 
     </script>
 </body>
