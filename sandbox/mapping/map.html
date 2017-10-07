@@ -7,13 +7,13 @@
 
  div.tooltip {
      position: absolute;
-     text-align: center;
      width: auto;
      height: auto;
-     padding: 2px;
+     padding: 2px 3.5px;
      font: 10px;
-     background: lightgray;
-     border: 1px;
+     background: whitesmoke;
+     border: 2px solid darkgray;
+     border-radius: 6px;
      pointer-events: none;
  }
 
@@ -47,7 +47,9 @@
 
 </style>
 <body>
-    <script src="//d3js.org/d3.v4.0.0-alpha.50.min.js"></script>
+    <script src="https://d3js.org/d3.v4.0.0-alpha.50.min.js"></script>
+    <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
     <script src="https://unpkg.com/d3-geo-voronoi"></script>
     <script>
@@ -83,9 +85,15 @@
                     .attr("class", "water")
                     .attr("d", path);
 
-                 svg.insert("path", ".graticule")
+                 /* svg.insert("path", ".graticule")
+                  *    .datum(topojson.feature(world, world.objects.land))
+                  *    .attr("class", "land")
+                  *    .attr("d", path);*/
+
+                 svg.append("clipPath")
+                    .attr("id","land-clip")
+                    .append("path")
                     .datum(topojson.feature(world, world.objects.land))
-                    .attr("class", "land")
                     .attr("d", path);
 
                  svg.insert("path",".graticule")
@@ -100,7 +108,7 @@
                     .attr("d", path);
              });
 
-     d3.csv("../../data/voronoi/languages-and-dialects-geo.csv",
+     d3.csv("../../data/voronoi/languages-and-dialects-geo-nodup.csv",
             function(error, data) {
                 if (error) throw error;
 
@@ -109,25 +117,28 @@
                     d['latitude'] = +d['latitude'];
                 });
 
-                projLon = function (x){
-                    return projection([x, 0])[0]
+                projLon = function (x, y){
+                    return projection([x, y])[0]
                 }
 
-                projLat = function (y){
-                    return projection([0, y])[1]
+                projLat = function (x, y){
+                    return projection([x, y])[1]
                 }
 
-                div = d3.select("body").append("div")
-                        .attr("class","tooltip")
-                        .style("opacity",0);
+                var div = d3.select("body").append("div")
+                            .attr("class","tooltip")
+                            .style("opacity",0);
 
                 svg.selectAll("circle")
                    .data(data)
                    .enter()
                    .append("circle")
-                   .attr("cx", function(d){return projLon(d.longitude);})
-                   .attr("cy", function(d){return projLat(d.latitude);})
-                   .attr("r", 1)
+                   .attr("cx",
+                         function(d){return projLon(d.longitude, d.latitude);})
+                   .attr("cy",
+                         function(d){return projLat(d.longitude, d.latitude);})
+                   .attr("r",
+                   function(d){return Math.abs(d.latitude) / 45;})
                    .attr("class", "language")
                    .on("mouseover", function(d){
                        div.transition()
@@ -142,6 +153,23 @@
                           .duration(500)
                           .style("opacity",0);
                    });
+
+                var voronoi = d3.geoVoronoi()
+                                .x(function(d) {return d.longitude;})
+                                .y(function(d) {return d.latitude;})(data);
+
+                svg.insert("g",".graticule")
+                   .attr("class","polygons")
+                   .selectAll("path")
+                   .data(voronoi.polygons().features)
+                   .enter()
+                   .append("path")
+                   .attr("d",path)
+                   .attr("clip-path", "url(#land-clip)")
+                   .attr("fill",function(_,i) {
+                       return d3.schemeCategory10[i%10]; })
+                   .attr("stroke","none");
+
             });
 
     </script>
