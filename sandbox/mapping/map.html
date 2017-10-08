@@ -10,10 +10,12 @@
      width: auto;
      height: auto;
      padding: 2px 3.5px;
-     font: 10px;
-     background: whitesmoke;
-     border: 2px solid darkgray;
-     border-radius: 6px;
+     font-family: sans-serif;
+     font-size: 10px;
+     font-weight: bold;
+     /*      background: whitesmoke; */
+     border: 1px solid whitesmoke;
+     border-radius: 3px;
      pointer-events: none;
  }
 
@@ -21,7 +23,7 @@
      fill: none;
      stroke: white;
      stroke-width: 0.5px;
-     stroke-opacity: 0.5;
+     stroke-opacity: 0.25;
  }
 
  .land {
@@ -85,17 +87,6 @@
                     .attr("class", "water")
                     .attr("d", path);
 
-                 /* svg.insert("path", ".graticule")
-                  *    .datum(topojson.feature(world, world.objects.land))
-                  *    .attr("class", "land")
-                  *    .attr("d", path);*/
-
-                 svg.append("clipPath")
-                    .attr("id","land-clip")
-                    .append("path")
-                    .datum(topojson.feature(world, world.objects.land))
-                    .attr("d", path);
-
                  svg.insert("path",".graticule")
                     .datum(topojson.feature(world, world.objects.lakes))
                     .attr("class","water")
@@ -108,7 +99,7 @@
                     .attr("d", path);
              });
 
-     d3.csv("../../data/voronoi/languages-and-dialects-geo-nodup.csv",
+     d3.csv("../../data/voronoi/ms-points.csv",
             function(error, data) {
                 if (error) throw error;
 
@@ -117,42 +108,9 @@
                     d['latitude'] = +d['latitude'];
                 });
 
-                projLon = function (x, y){
-                    return projection([x, y])[0]
-                }
-
-                projLat = function (x, y){
-                    return projection([x, y])[1]
-                }
-
                 var div = d3.select("body").append("div")
                             .attr("class","tooltip")
                             .style("opacity",0);
-
-                svg.selectAll("circle")
-                   .data(data)
-                   .enter()
-                   .append("circle")
-                   .attr("cx",
-                         function(d){return projLon(d.longitude, d.latitude);})
-                   .attr("cy",
-                         function(d){return projLat(d.longitude, d.latitude);})
-                   .attr("r",
-                   function(d){return Math.abs(d.latitude) / 45;})
-                   .attr("class", "language")
-                   .on("mouseover", function(d){
-                       div.transition()
-                          .duration(200)
-                          .style("opacity",.9);
-                       div.html(d.name)
-                          .style("left", (d3.event.pageX) + "px")
-                          .style("top", (d3.event.pageY - 23) + "px");
-                   })
-                   .on("mouseout", function(d){
-                       div.transition()
-                          .duration(500)
-                          .style("opacity",0);
-                   });
 
                 var voronoi = d3.geoVoronoi()
                                 .x(function(d) {return d.longitude;})
@@ -165,10 +123,55 @@
                    .enter()
                    .append("path")
                    .attr("d",path)
-                   .attr("clip-path", "url(#land-clip)")
-                   .attr("fill",function(_,i) {
-                       return d3.schemeCategory10[i%10]; })
+                   .attr("fill",function(d,i) {
+                       return data[i].color; })
                    .attr("stroke","none");
+
+                svg.append("g")
+                   .attr("class","polygons")
+                   .selectAll("path")
+                   .data(voronoi.polygons().features)
+                   .enter()
+                   .append("path")
+                   .attr("d",path)
+                   .attr("opacity",0.001)
+                   .attr("stroke","none")
+                   .on("mouseover", function(d,i){
+                       div.transition()
+                          .duration(200)
+                          .style("opacity",.8);
+                       div.html(data[i].name)
+                          .style("left",
+                                 (projection(
+                                     [data[i].longitude,
+                                      data[i].latitude])[0]+9) + "px")
+                          .style("top",
+                                 (projection([data[i].longitude,
+                                              data[i].latitude])[1]-10) + "px")
+                          .style("background",data[i].color)
+                          .style("color",
+                                 d3.lab(data[i].color).l > 65 ?
+                                 "black" : "white");
+                   })
+                   .on("mouseout", function(d){
+                       div.transition()
+                          .duration(500)
+                          .style("opacity",0);
+                   });
+
+                d3.json("../../data/voronoi/antarctica.topo.json",
+                        function(error,world){
+                            if (error) throw error;
+
+                            console.log(world);
+
+                            svg.append("path")
+                               .datum(topojson.feature
+                                   (world,world.objects.antarctica))
+                               .attr("class","land")
+                               .attr("d",path);
+
+                        });
 
             });
 
