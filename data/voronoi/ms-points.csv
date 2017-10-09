@@ -460,7 +460,6 @@ Juba_Arabic [apd-2],4.85,31.6,#D2CC77
 Kabardian [kbd],43.52,43.63,#3233A6
 Kabyle [kab],36.5,5,#9B4D3D
 Kadazan [kzj],5.917,117.167,#CF9742
-Kadiwéu [kbc],-20,-57,#AD4875
 Kaera [xxx-111],-8.38,124.21,#AC77D4
 Kagoshima [jpn-5],31.6,130.55,#35B794
 Kaike [kzq],28.9,83.17,#2AA1A6
@@ -1284,3 +1283,4 @@ Zapotec [zai],16.5,-95,#D9406C
 Zhuang [zyn],23.6,108.3,#D8C689
 Zulu [zul],-30,30,#AE4071
 Zuni [zun],35.08,-108.83,#4D8B63
+Kadiwéu [kbc],-20,-57,#AD4875

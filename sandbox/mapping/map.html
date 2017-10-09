@@ -48,6 +48,7 @@
      fill: none;
      stroke: #fff;
      stroke-width: 0.5px;
+     stroke-opacity: 0.5;
  }
 
  .language {
@@ -70,10 +71,11 @@
      var width = mapDiv.clientWidth,
          height = mapDiv.clientHeight;
 
-     var projection = d3.geoEquirectangular()
-                        .scale(height / Math.PI)
+     var projection = d3.geoEckert3()
+                        .scale(width / 1.75 / Math.PI)
                         .translate([width / 2, height / 2])
-                        .rotate([205,0]);
+                        .rotate([205,0])
+                        .precision(0.1);
 
      var path = d3.geoPath()
                   .projection(projection);
@@ -127,7 +129,7 @@
                                 .x(function(d) {return d.longitude;})
                                 .y(function(d) {return d.latitude;})(data);
 
-                svg.insert("g",".graticule")
+                svg.insert("g",".water")
                    .attr("class","polygons")
                    .selectAll("path")
                    .data(voronoi.polygons().features)
@@ -155,13 +157,13 @@
                           .style("left",
                                  (projection(
                                      [data[i].longitude,
-                                      data[i].latitude])[0]+4.5) + "px")
+                                      data[i].latitude])[0]+2) + "px")
                           .style("top",
                                  (projection([data[i].longitude,
-                                              data[i].latitude])[1]-13) + "px")
+                                              data[i].latitude])[1]-10) + "px")
                           .style("background",data[i].color)
                           .style("color",
-                                 d3.lab(data[i].color).l > 65 ?
+                                 d3.lab(data[i].color).l > 70 ?
                                  "black" : "white");
                    })
                    .on("mouseout", function(d){
