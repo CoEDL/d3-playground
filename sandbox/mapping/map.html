@@ -138,7 +138,8 @@
                    .attr("d",path)
                    .attr("fill",function(d,i) {
                        return data[i].color; })
-                   .attr("stroke","none");
+                   .attr("stroke",function(d,i) {
+                       return data[i].color; });
 
                 svg.append("g")
                    .attr("class","polygons")
