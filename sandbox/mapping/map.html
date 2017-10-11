@@ -47,7 +47,7 @@
  .boundary {
      fill: none;
      stroke: #fff;
-     stroke-width: 0.5px;
+     stroke-width: 1px;
      stroke-opacity: 0.5;
  }
 
@@ -71,8 +71,8 @@
      var width = mapDiv.clientWidth,
          height = mapDiv.clientHeight;
 
-     var projection = d3.geoEckert3()
-                        .scale(width / 1.75 / Math.PI)
+     var projection = d3.geoNaturalEarth()
+                        .scale(width / 2 / Math.PI)
                         .translate([width / 2, height / 2])
                         .rotate([205,0])
                         .precision(0.1);
@@ -81,6 +81,8 @@
                   .projection(projection);
 
      var graticule = d3.geoGraticule();
+
+     var circle = d3.geoCircle();
 
      var svg = d3.select("#map").append("svg")
                  .attr("width", width)
@@ -96,6 +98,12 @@
                  if (error) throw error;
 
                  svg.insert("path",".graticule")
+                     .datum(topojson.feature
+                                   (world,world.objects.land))
+                     .attr("class","land")
+                     .attr("d",path);
+
+                 svg.insert("path",".graticule")
                     .datum(topojson.feature(world, world.objects.oceans))
                     .attr("class", "water")
                     .attr("d", path);
@@ -107,7 +115,7 @@
 
                  svg.insert("path", ".graticule")
                     .datum(topojson.mesh(world, world.objects.countries,
-                                         function(a, b) { return a !== b; }))
+                                         function(a, b) { return true; }))
                     .attr("class", "boundary")
                     .attr("d", path);
              });
@@ -126,20 +134,83 @@
                             .style("opacity",0);
 
                 var voronoi = d3.geoVoronoi()
-                                .x(function(d) {return d.longitude;})
-                                .y(function(d) {return d.latitude;})(data);
+                            	   .x(function(d) {return d.longitude;})
+                            	   .y(function(d) {return d.latitude;})(data);
 
                 svg.insert("g",".water")
                    .attr("class","polygons")
-                   .selectAll("path")
+                   .selectAll("clipPath")
                    .data(voronoi.polygons().features)
                    .enter()
+                   .append("clipPath")
+                   .attr("id", function(d, i) { return "clip-" + i; })
                    .append("path")
-                   .attr("d",path)
-                   .attr("fill",function(d,i) {
-                       return data[i].color; })
-                   .attr("stroke",function(d,i) {
-                       return data[i].color; });
+                   .attr("d",path);
+
+                svg.insert("g",".water")
+                   .attr("class","languages")
+                   .selectAll("path")
+                   .data(data)
+                   .enter()
+                   .append("path")
+                   .attr("fill",function (d) {
+                   	return d.color;
+                   })
+                   .attr("stroke",function (d) {
+                   	return d.color;
+                   })
+                   .attr("stroke-width","0.5px")
+                   .attr("clip-path", function(d, i){
+                   	return "url(#clip-" + i + ")"
+                   })
+                   .attr("d",function(d){
+                   	return path(circle.center([d.longitude,d.latitude])
+                   					  .radius(1.691667)());
+                   });
+
+                // svg.insert("g",".water")
+                //    .attr("class","languages")
+                //    .selectAll("path")
+                //    .data(data)
+                //    .enter()
+                //    .append("path")
+                //    .attr("fill",function (d) {
+                //    	return d.color;
+                //    })
+                //    .attr("stroke",function (d) {
+                //    	return d.color;
+                //    })
+                //    .attr("stroke-width","0.5px")
+                //    .attr("clip-path", function(d, i){
+                //    	return "url(#clip-" + i + ")"
+                //    })
+                //    .attr("opacity",1/3)
+                //    .attr("d",function(d){
+                //    	return path(circle.center([d.longitude,d.latitude])
+                //    					  .radius(2 * 1.691667)());
+                //    });
+
+                svg.append("g")
+                   .attr("class","halo")
+                   .selectAll("path")
+                   .data(data)
+                   .enter()
+                   .append("path")
+                   .attr("fill",function (d) {
+                   	return d.color;
+                   })
+                   .attr("stroke",function (d) {
+                   	return d.color;
+                   })
+                   .attr("stroke-width","0.5px")
+                   .attr("opacity",1/3)
+                   .attr("clip-path", function(d, i){
+                   	return "url(#clip-" + i + ")"
+                   })
+                   .attr("d",function(d){
+                   	return path(circle.center([d.longitude,d.latitude])
+                   					  .radius(1.691667)());
+                   });
 
                 svg.append("g")
                    .attr("class","polygons")
@@ -172,20 +243,6 @@
                           .duration(500)
                           .style("opacity",0);
                    });
-
-                d3.json("../../data/voronoi/antarctica.topo.json",
-                        function(error,world){
-                            if (error) throw error;
-
-                            console.log(world);
-
-                            svg.append("path")
-                               .datum(topojson.feature
-                                   (world,world.objects.antarctica))
-                               .attr("class","land")
-                               .attr("d",path);
-
-                        });
 
             });
 
