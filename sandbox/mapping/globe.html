@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
-    <title>A map</title>
+    <title>A globe</title>
 </head>
 <style>
 
@@ -19,9 +19,8 @@
      height: auto;
      padding: 2px 3.5px;
      font-family: sans-serif;
-     font-size: 10px;
-     font-weight: bold;
-     /*      background: whitesmoke; */
+     font-size: 11px;
+     line-height: 1.5;
      border: 1px solid whitesmoke;
      border-radius: 3px;
      pointer-events: none;
@@ -73,13 +72,12 @@
      var width = mapDiv.clientWidth,
          height = mapDiv.clientHeight;
 
-     var projection = d3.geoNaturalEarth()
-                        .scale(Math.max(height / Math.PI, width / 2 / Math.PI))
+     var projection = d3.geoOrthographic()
+                        .scale(Math.min(height / 2,
+                                        width / 2))
                         .translate([width / 2, height / 2])
-                        .rotate([205,0])
+                        .rotate([-136,20])
                         .precision(0.1);
-
-     console.log(projection);
 
      var path = d3.geoPath()
                   .projection(projection);
@@ -109,8 +107,7 @@
                                     d3.event.sourceEvent.pageY],
                               o1 = [o0[0] + (m0[0] - m1[0]) / 4,
                                     o0[1] + (m1[1] - m0[1]) / 4];
-                          /* projection.rotate([-o1[0], -o1[1]]);*/
-                          projection.rotate([-o1[0], -o0[1]])
+                          projection.rotate([-o1[0], -o1[1]]);
                       }
 
                       // Update the map
@@ -203,6 +200,7 @@
             .data(data)
             .enter()
             .append("path")
+            .attr("id", function (d, i) {return "dot-" + i;})
             .attr("fill",function (d) {
                 return d.color;
             })
@@ -221,6 +219,44 @@
             .attr("class", "graticule")
             .attr("d", path);
 
+         var globe_highlight = svg.append("defs").append("radialGradient")
+                                  .attr("id", "globe_highlight")
+                                  .attr("cx", "33.333%")
+                                  .attr("cy", "33.333%");
+         globe_highlight.append("stop")
+                        .attr("offset", "5%")
+                        .attr("stop-color", "white")
+                        .attr("stop-opacity", 0);
+         globe_highlight.append("stop")
+                        .attr("offset", "100%")
+                        .attr("stop-color", "darkgray")
+                        .attr("stop-opacity", 1/6);
+
+         var globe_shading = svg.append("defs").append("radialGradient")
+                                .attr("id", "globe_shading")
+                                .attr("cx", "50%")
+                                .attr("cy", "40%");
+         globe_shading.append("stop")
+                      .attr("offset", "5%")
+                      .attr("stop-color", "white")
+                      .attr("stop-opacity", 0);
+         globe_shading.append("stop")
+                      .attr("offset", "100%")
+                      .attr("stop-color", "black")
+                      .attr("stop-opacity", 1/6);
+
+         svg.append("circle")
+            .attr("cx", width / 2)
+            .attr("cy", height / 2)
+            .attr("r", Math.min(width / 2, height / 2))
+            .style("fill", "url(#globe_highlight)");
+
+         svg.append("circle")
+            .attr("cx", width / 2)
+            .attr("cy", height / 2)
+            .attr("r", Math.min(width / 2, height / 2))
+            .style("fill", "url(#globe_shading)");
+
          svg.append("g")
             .attr("class","polygons")
             .selectAll("path")
@@ -234,23 +270,41 @@
                 div.transition()
                    .duration(200)
                    .style("opacity",.8);
-                div.html(data[i].name)
+                div.html("<b>" + data[i].name + "</b>")
                    .style("left",
                           (projection(
                               [data[i].longitude,
                                data[i].latitude])[0]+2) + "px")
                    .style("top",
                           (projection([data[i].longitude,
-                                       data[i].latitude])[1]-10) + "px")
+                                       data[i].latitude])[1]-11) + "px")
                    .style("background",data[i].color)
                    .style("color",
                           d3.lab(data[i].color).l > 70 ?
                           "black" : "white");
+                d3.select("#dot-" + i)
+                  .transition()
+                  .duration(100)
+                  .attr("opacity",1);
             })
-            .on("mouseout", function(d){
+            .on("click", function(d,i){
+                if (div.active) {
+                    div.html("<b>" + data[i].name + "</b>");
+                    div.active = false;
+                } else {
+                    div.html("<b>" + data[i].name + "</b><br>"
+                           + data[i].family + "<br>" + data[i].country);
+                    div.active = true;
+                };
+            })
+            .on("mouseout", function(d,i){
                 div.transition()
                    .duration(500)
                    .style("opacity",0);
+                d3.select("#dot-" + i)
+                  .transition()
+                  .duration(100)
+                  .attr("opacity",1/3);
             });
      };
     </script>
