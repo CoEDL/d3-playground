@@ -282,12 +282,22 @@
                        .duration(200)
                        .style("opacity",div.active ? 1 : .8);
                     div.html("<b>" + data[i].name + "</b>" +
-                             (div.active ? ("<br>" + data[i].family + "<br>"
-                                          + (data[i].subgroup == "" ?
-                                             "" : "↪ " + data[i].subgroup + "<br>")
-                                          + "<i>" + data[i].country + "</i>") : ""))
+                                                       (div.active ? ("<br>" + data[i].family + "<br>"
+                                                                    + (data[i].subgroup == "" ?
+                                                                       "" : "↪ " + data[i].subgroup + "<br>")
+                                                                    + "<i>" + data[i].country + "</i>") : ""))
                        .style("left", (d3.event.clientX) + "px")
                        .style("top", (d3.event.clientY) + "px")
+                    /* .style("left", projection.scale(
+                     *     Math.min(height / 2, width / 2) *
+                     *     d3.zoomTransform(svg.node()).k)(
+                     *         [data[i].longitude,
+                     *          data[i].latitude])[0] + "px")
+                     * .style("top", projection
+                     *     .scale(Math.min(height / 2, width / 2) *
+                     *         d3.zoomTransform(svg.node()).k)(
+                     *             [data[i].longitude,
+                     *              data[i].latitude])[1] + "px")*/
                        .style("background",data[i].color)
                        .style("color",
                               d3.lab(data[i].color).l > 100 * Math.sqrt(0.5) ?
