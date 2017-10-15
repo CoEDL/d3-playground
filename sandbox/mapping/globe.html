@@ -128,7 +128,7 @@
          geosimp;
 
      function zoomed(){
-         area = 75000 / Math.pow(Math.min(width, height) *
+         area = 33333 / Math.pow(Math.min(width, height) *
              d3.zoomTransform(svg.node()).k,2);
          geosimp = topojson.simplify(geodata,area);
          d3.selectAll(".land")
@@ -149,7 +149,7 @@
                                 function(a, b) { return true; }
            ))
            .attr("d",path);
-         svg.attr("transform", "scale(" + d3.event.transform.k + ")");
+         svg.attr("transform", "scale(" + d3.zoomTransform(svg.node()).k + ")");
      };
 
      svg.attr("width", width)
@@ -159,7 +159,7 @@
                 .scaleExtent([1,6])
                 .on("zoom", zoomed));
 
-     queue().defer(d3.json,"../../data/voronoi/ne_10m_quantized.json")
+     queue().defer(d3.json,"../../data/voronoi/ne_50m.json")
             .defer(d3.csv,"../../data/voronoi/all-points.csv")
             .await(plotmap);
 
@@ -181,7 +181,7 @@
                          .x(function(d) {return d.longitude;})
                          .y(function(d) {return d.latitude;})(data);
 
-         z = 75000 / Math.pow(Math.min(width, height) *
+         z = 33333 / Math.pow(Math.min(width, height) *
              d3.zoomTransform(svg.node()).k,2);
 
          world = topojson.presimplify(world);
