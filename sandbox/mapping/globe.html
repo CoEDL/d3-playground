@@ -195,6 +195,13 @@
 
          world = topojson.simplify(world,z);
 
+         svg.append("circle")
+            .attr("class","shadow")
+            .attr("cx", width / 2)
+            .attr("cy", height / 2)
+            .attr("r", Math.min(width / 2, height / 2))
+            .style("fill", "lightgray");
+
          svg.append("path")
             .datum(topojson.feature
                 (world,world.objects.land))
@@ -302,13 +309,13 @@
          svg.append("path")
             .datum(topojson.feature(world, world.objects.oceans))
             .attr("class", "water oceans")
-            .attr("opacity",3/4)
+            .attr("opacity",2/3)
             .attr("d", path);
 
          svg.append("path")
             .datum(topojson.feature(world, world.objects.lakes))
             .attr("class","water lakes")
-            .attr("opacity",3/4)
+            .attr("opacity",2/3)
             .attr("d", path);
 
          svg.append("path")
@@ -348,7 +355,7 @@
                                   .attr("cy", "33.333%");
          globe_highlight.append("stop")
                         .attr("offset", "5%")
-                        .attr("stop-color", "whitesmoke")
+                        .attr("stop-color", "white")
                         .attr("stop-opacity", 0);
          globe_highlight.append("stop")
                         .attr("offset", "100%")
