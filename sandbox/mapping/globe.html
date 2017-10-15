@@ -40,6 +40,7 @@
 
  .water {
      fill: lightgray;
+     pointer-events: none;
  }
 
  .lakes {
@@ -53,6 +54,10 @@
      stroke: #fff;
      stroke-width: 0.5px;
      stroke-opacity: 0.5;
+ }
+
+ .shadow {
+     pointer-events: none;
  }
 
 </style>
@@ -128,7 +133,7 @@
          geosimp;
 
      function zoomed(){
-         area = 33333 / Math.pow(Math.min(width, height) *
+         area = 30000 / Math.pow(Math.min(width, height) *
              d3.zoomTransform(svg.node()).k,2);
          geosimp = topojson.simplify(geodata,area);
          d3.selectAll(".land")
@@ -181,7 +186,7 @@
                          .x(function(d) {return d.longitude;})
                          .y(function(d) {return d.latitude;})(data);
 
-         z = 33333 / Math.pow(Math.min(width, height) *
+         z = 30000 / Math.pow(Math.min(width, height) *
              d3.zoomTransform(svg.node()).k,2);
 
          world = topojson.presimplify(world);
@@ -222,16 +227,88 @@
             .attr("clip-path", function(d, i){
                 return "url(#clip-" + i + ")"
             })
-            .attr("d",circlePath);
+            .attr("d",circlePath)
+            .on("mouseover", function(d,i){
+                if (!isDragging){
+                    div.transition()
+                       .duration(200)
+                       .style("opacity",div.active ? 1 : .8);
+                    div.html("<b>" + data[i].name + "</b>"
+                           + (div.active ?
+                              ("<br>" + data[i].family
+                             + "<br>" + (data[i].subgroup == "" ?
+                                         "" : "↪ " + data[i].subgroup + "<br>")
+                             + "<i>" + data[i].country + "</i>") : ""))
+                       .style("left", (d3.event.clientX) + "px")
+                       .style("top", (d3.event.clientY) + "px")
+                    /* .style("left", projection.scale(
+                     *     Math.min(height / 2, width / 2) *
+                     *     d3.zoomTransform(svg.node()).k)(
+                     *         [data[i].longitude,
+                     *          data[i].latitude])[0] + "px")
+                     * .style("top", projection
+                     *     .scale(Math.min(height / 2, width / 2) *
+                     *         d3.zoomTransform(svg.node()).k)(
+                     *             [data[i].longitude,
+                     *              data[i].latitude])[1] + "px")*/
+                       .style("background",data[i].color)
+                       .style("color",
+                              d3.lab(data[i].color).l > 100 * Math.sqrt(0.5) ?
+                              "black" : "white")
+                       .style("border-color",
+                              d3.lab(data[i].color).l > 100 * Math.sqrt(0.5) ?
+                              "black" : "white");
+                    d3.select(this).style("cursor","none");
+                    /* d3.select("#dot-" + i)
+                     *   .transition()
+                     *   .duration(100)
+                     *   .attr("opacity",2/3);*/
+                };
+            })
+            .on("mousemove", function(d,i){
+                div.style("left", (d3.event.clientX) + "px")
+                   .style("top", (d3.event.clientY) + "px")
+            })
+            .on("click", function(d,i){
+                if (!div.active) {
+                    div.transition()
+                       .duration(200)
+                       .style("opacity",1);
+                    div.html("<b>" + data[i].name + "</b><br>"
+                           + data[i].family + "<br>"
+                           + (data[i].subgroup == "" ?
+                              "" : "↪ " + data[i].subgroup + "<br>")
+                           + "<i>" + data[i].country + "</i>");
+                    div.active = true;
+                } else {
+                    div.transition()
+                       .duration(500)
+                       .style("opacity",.8);
+                    div.html("<b>" + data[i].name + "</b>");
+                    div.active = false;
+                };
+            })
+            .on("mouseout", function(d,i){
+                div.transition()
+                   .duration(!isDragging ? 500 : 0)
+                   .style("opacity",0);
+                d3.select(this).style("cursor","default");
+                /* d3.select("#dot-" + i)
+                 *   .transition()
+                 *   .duration(100)
+                 *   .attr("opacity",1/3);*/
+            });
 
          svg.append("path")
             .datum(topojson.feature(world, world.objects.oceans))
             .attr("class", "water oceans")
+            .attr("opacity",3/4)
             .attr("d", path);
 
          svg.append("path")
             .datum(topojson.feature(world, world.objects.lakes))
             .attr("class","water lakes")
+            .attr("opacity",3/4)
             .attr("d", path);
 
          svg.append("path")
@@ -240,25 +317,25 @@
             .attr("class", "boundary")
             .attr("d", path);
 
-         svg.append("g")
-            .attr("class","dots")
-            .selectAll("path")
-            .data(data)
-            .enter()
-            .append("path")
-            .attr("id", function (d, i) {return "dot-" + i;})
-            .attr("fill",function (d) {
-                return d.color;
-            })
-            .attr("stroke",function (d) {
-                return d.color;
-            })
-            .attr("stroke-width","0.5px")
-            .attr("opacity",1/3)
-            .attr("clip-path", function(d, i){
-                return "url(#clip-" + i + ")"
-            })
-            .attr("d",circlePath);
+         /* svg.append("g")
+          *    .attr("class","dots")
+          *    .selectAll("path")
+          *    .data(data)
+          *    .enter()
+          *    .append("path")
+          *    .attr("id", function (d, i) {return "dot-" + i;})
+          *    .attr("fill",function (d) {
+          *        return d.color;
+          *    })
+          *    .attr("stroke",function (d) {
+          *        return d.color;
+          *    })
+          *    .attr("stroke-width","0.5px")
+          *    .attr("opacity",0.001)
+          *    .attr("clip-path", function(d, i){
+          *        return "url(#clip-" + i + ")"
+          *    })
+          *    .attr("d",circlePath);*/
 
          svg.append("path")
             .datum(graticule)
@@ -271,7 +348,7 @@
                                   .attr("cy", "33.333%");
          globe_highlight.append("stop")
                         .attr("offset", "5%")
-                        .attr("stop-color", "white")
+                        .attr("stop-color", "whitesmoke")
                         .attr("stop-opacity", 0);
          globe_highlight.append("stop")
                         .attr("offset", "100%")
@@ -304,89 +381,6 @@
             .attr("cy", height / 2)
             .attr("r", Math.min(width / 2, height / 2))
             .style("fill", "url(#globe_shading)");
-
-         svg.append("g")
-            .attr("class","dots")
-            .selectAll("path")
-            .data(data)
-            .enter()
-            .append("path")
-            .attr("d",circlePath)
-            .attr("opacity",0.001)
-            .attr("stroke","none")
-            .attr("clip-path", function(d, i){
-                return "url(#clip-" + i + ")"
-            })
-            .on("mouseover", function(d,i){
-                if (!isDragging){
-                    div.transition()
-                       .duration(200)
-                       .style("opacity",div.active ? 1 : .8);
-                    div.html("<b>" + data[i].name + "</b>"
-                           + (div.active ?
-                              ("<br>" + data[i].family
-                             + "<br>" + (data[i].subgroup == "" ?
-                                         "" : "↪ " + data[i].subgroup + "<br>")
-                             + "<i>" + data[i].country + "</i>") : ""))
-                       .style("left", (d3.event.clientX) + "px")
-                       .style("top", (d3.event.clientY) + "px")
-                    /* .style("left", projection.scale(
-                     *     Math.min(height / 2, width / 2) *
-                     *     d3.zoomTransform(svg.node()).k)(
-                     *         [data[i].longitude,
-                     *          data[i].latitude])[0] + "px")
-                     * .style("top", projection
-                     *     .scale(Math.min(height / 2, width / 2) *
-                     *         d3.zoomTransform(svg.node()).k)(
-                     *             [data[i].longitude,
-                     *              data[i].latitude])[1] + "px")*/
-                       .style("background",data[i].color)
-                       .style("color",
-                              d3.lab(data[i].color).l > 100 * Math.sqrt(0.5) ?
-                              "black" : "white")
-                       .style("border-color",
-                              d3.lab(data[i].color).l > 100 * Math.sqrt(0.5) ?
-                              "black" : "white");
-                    d3.select(this).style("cursor","none");
-                    d3.select("#dot-" + i)
-                      .transition()
-                      .duration(100)
-                      .attr("opacity",2/3);
-                };
-            })
-            .on("mousemove", function(d,i){
-                div.style("left", (d3.event.clientX) + "px")
-                   .style("top", (d3.event.clientY) + "px")
-            })
-            .on("click", function(d,i){
-                if (!div.active) {
-                    div.transition()
-                       .duration(200)
-                       .style("opacity",1);
-                    div.html("<b>" + data[i].name + "</b><br>"
-                           + data[i].family + "<br>"
-                           + (data[i].subgroup == "" ?
-                              "" : "↪ " + data[i].subgroup + "<br>")
-                           + "<i>" + data[i].country + "</i>");
-                    div.active = true;
-                } else {
-                    div.transition()
-                       .duration(500)
-                       .style("opacity",.8);
-                    div.html("<b>" + data[i].name + "</b>");
-                    div.active = false;
-                };
-            })
-            .on("mouseout", function(d,i){
-                div.transition()
-                   .duration(!isDragging ? 500 : 0)
-                   .style("opacity",0);
-                d3.select(this).style("cursor","default");
-                d3.select("#dot-" + i)
-                  .transition()
-                  .duration(100)
-                  .attr("opacity",1/3);
-            });
      };
 
      window.addEventListener("resize", function(){
