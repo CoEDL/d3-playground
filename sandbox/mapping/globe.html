@@ -16,7 +16,7 @@
      right: 20px;
      top: 20px;
      bottom: 20px;
-     cursor: url(cursor-white.png), auto;
+     /* cursor: url(cursor-white.png), auto; */
  }
 
  div.tooltip {
@@ -28,7 +28,7 @@
      font-size: 12px;
      line-height: 1.5;
      border: 1px solid;
-     border-radius: 8px;
+     border-radius: 0px 8px 8px;
      pointer-events: none;
  }
 
@@ -296,7 +296,7 @@
                        .style("border-color",
                               d3.lab(data[i].color).l > 100 * Math.sqrt(0.5) ?
                               "black" : "white");
-                    /* d3.select(this).style("cursor","none");*/
+                    d3.select(this).style("cursor","none");
                     /* d3.select("#dot-" + i)
                      *   .transition()
                      *   .duration(100)
@@ -330,7 +330,7 @@
                 div.transition()
                    .duration(!isDragging ? 500 : 0)
                    .style("opacity",0);
-                /* d3.select(this).style("cursor","url(cursor-white.png), auto");*/
+                d3.select(this).style("cursor","default");
                 /* d3.select("#dot-" + i)
                  *   .transition()
                  *   .duration(100)
