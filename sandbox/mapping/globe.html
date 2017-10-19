@@ -196,7 +196,8 @@
                 .on("zoom", zoomed));
 
      queue().defer(d3.json,"../../data/voronoi/ne_50m.json")
-            .defer(d3.csv,"../../data/voronoi/all-points.csv")
+            .defer(d3.csv,"../../data/voronoi/"+ getQueryVariable("data")
+                         +".csv")
             .await(plotmap);
 
      var geodata;
