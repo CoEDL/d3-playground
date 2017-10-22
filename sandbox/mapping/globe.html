@@ -234,11 +234,13 @@
             .attr("r", Math.min(width / 2, height / 2))
             .style("fill", "lightgray");
 
-         svg.append("path")
-            .datum(topojson.feature
-                (world,world.objects.land))
-            .attr("class","land")
-            .attr("d",path);
+         if (typeof getQueryVariable("plain") != "undefined"){
+             svg.append("path")
+                .datum(topojson.feature
+                    (world,world.objects.land))
+                .attr("class","land")
+                .attr("d",path);
+         };
 
          svg.append("g")
             .attr("class","polygons")
@@ -338,43 +340,25 @@
                  *   .attr("opacity",1/3);*/
             });
 
-         svg.append("path")
-            .datum(topojson.feature(world, world.objects.oceans))
-            .attr("class", "water oceans")
-            .attr("opacity",2/3)
-            .attr("d", path);
+         if (typeof getQueryVariable("plain") != "undefined"){
+             svg.append("path")
+                .datum(topojson.feature(world, world.objects.oceans))
+                .attr("class", "water oceans")
+                .attr("opacity",2/3)
+                .attr("d", path);
 
-         svg.append("path")
-            .datum(topojson.feature(world, world.objects.lakes))
-            .attr("class","water lakes")
-            .attr("opacity",2/3)
-            .attr("d", path);
+             svg.append("path")
+                .datum(topojson.feature(world, world.objects.lakes))
+                .attr("class","water lakes")
+                .attr("opacity",2/3)
+                .attr("d", path);
 
-         svg.append("path")
-            .datum(topojson.mesh(world, world.objects.countries,
-                                 function(a, b) { return true; }))
-            .attr("class", "boundary")
-            .attr("d", path);
-
-         /* svg.append("g")
-          *    .attr("class","dots")
-          *    .selectAll("path")
-          *    .data(data)
-          *    .enter()
-          *    .append("path")
-          *    .attr("id", function (d, i) {return "dot-" + i;})
-          *    .attr("fill",function (d) {
-          *        return d.color;
-          *    })
-          *    .attr("stroke",function (d) {
-          *        return d.color;
-          *    })
-          *    .attr("stroke-width","0.5px")
-          *    .attr("opacity",0.001)
-          *    .attr("clip-path", function(d, i){
-          *        return "url(#clip-" + i + ")"
-          *    })
-          *    .attr("d",circlePath);*/
+             svg.append("path")
+                .datum(topojson.mesh(world, world.objects.countries,
+                                     function(a, b) { return true; }))
+                .attr("class", "boundary")
+                .attr("d", path);
+         };
 
          svg.append("path")
             .datum(graticule)
